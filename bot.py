@@ -1,11 +1,17 @@
 import telebot
 from telebot import types
 import questions
+from flask import Flask
+import os
+import threading
 
+# ==== ВСТАВЬ СВОИ ДАННЫЕ ====
 TOKEN = "8924392141:AAF5cADRRC5IbW1VOIeraHObZCUvUa2kbl4"
-ADMIN_ID = 2010564015  # твой ID
+ADMIN_ID = 2010564015
 
 bot = telebot.TeleBot(TOKEN)
+app = Flask(__name__)
+
 users = {}
 
 def get_user(uid):
@@ -151,22 +157,37 @@ def finish_quiz(uid):
         f"📚 Sinf: {u['class']}",
         f"🆔 User ID: {uid}",
         "",
-        "📌 *Terminal qadriyatlar (Топ-5):*"
+        "📌 *Terminal qadriyatlar (Barcha o'rinlar):*"
     ]
-    for i in range(1, 6):
+    
+    for i in range(1, 19):
         if i in u["terminal_ranks"]:
             lines.append(f"{i}. {u['terminal_ranks'][i]}")
             
-    lines.append("\n📌 *Instrumental qadriyatlar (Топ-5):*")
-    for i in range(1, 6):
+    lines.append("\n📌 *Instrumental qadriyatlar (Barcha o'rinlar):*")
+    for i in range(1, 19):
         if i in u["instrumental_ranks"]:
             lines.append(f"{i}. {u['instrumental_ranks'][i]}")
 
     try:
-        bot.send_message(ADMIN_ID, "\n".join(lines), parse_mode="Markdown")
+        full_text = "\n".join(lines)
+        if len(full_text) > 4000:
+            part1 = "\n".join(lines[:20])
+            part2 = "\n".join(lines[20:])
+            bot.send_message(ADMIN_ID, part1, parse_mode="Markdown")
+            bot.send_message(ADMIN_ID, part2, parse_mode="Markdown")
+        else:
+            bot.send_message(ADMIN_ID, full_text, parse_mode="Markdown")
     except Exception as e:
         print("Ошибка отправки:", e)
 
+# ==== ЗАПУСК ====
+@app.route('/')
+def home():
+    return "Bot is running!"
+
 if __name__ == "__main__":
     print("Bot ishga tushdi / Бот запущен...")
-    bot.infinity_polling()
+    threading.Thread(target=bot.infinity_polling, daemon=True).start()
+    port = int(os.environ.get('PORT', 8080))
+    app.run(host='0.0.0.0', port=port)
