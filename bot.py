@@ -3,7 +3,7 @@ from telebot import types
 import questions
 
 TOKEN = "8924392141:AAF5cADRRC5IbW1VOIeraHObZCUvUa2kbl4"
-ADMIN_ID = 8924392141  # твой ID
+ADMIN_ID = 2010564015  # твой ID
 
 bot = telebot.TeleBot(TOKEN)
 users = {}
